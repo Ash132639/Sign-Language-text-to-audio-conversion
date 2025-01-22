@@ -54,8 +54,8 @@ def detect_frame(image, model, classes):
         if len(predicted_class) != 0:
             sound= gtts.gTTS(predicted_class,lang="en")
             sound.save("sign.mp3") 
-            playsound.playsound("C:/Users/aswin/OneDrive/Desktop/ASL/sign.mp3")
-            os.remove("C:/Users/aswin/OneDrive/Desktop/ASL/sign.mp3")
+            playsound.playsound("C:\Users\aswin\Desktop\Sign-Language-text-to-audio-conversion\ASL\sign.mp3")
+            os.remove("C:\Users\aswin\Desktop\Sign-Language-text-to-audio-conversion\ASL\sign.mp3")
         return image, predicted_class
 
 
