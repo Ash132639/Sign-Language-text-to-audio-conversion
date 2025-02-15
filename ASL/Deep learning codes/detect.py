@@ -88,9 +88,9 @@ def detect_frame(image, model, classes, device):
 
                 # Text-to-speech conversion
                     sound = gTTS(predicted_class, lang="en")
-                    sound.save("sign.mp3")
-                    playsound.playsound("sign.mp3")
-                    os.remove("sign.mp3")
+                    sound.save("C:\Users\aswin\Desktop\Sign-Language-text-to-audio-conversion\ASL\sign.mp3")
+                    playsound.playsound("C:\Users\aswin\Desktop\Sign-Language-text-to-audio-conversion\ASL\sign.mp3")
+                    os.remove("sC:\Users\aswin\Desktop\Sign-Language-text-to-audio-conversion\ASL\sign.mp3")
 
         return image, predicted_class
 
