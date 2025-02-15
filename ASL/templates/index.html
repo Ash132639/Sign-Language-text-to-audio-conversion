@@ -12,6 +12,29 @@
         #videoFeed {
             margin-bottom: 20px;
         }
+        #textBox {
+            width: 80%;
+            height: 100px;
+            font-size: 18px;
+            margin: 20px auto;
+            padding: 10px;
+        }
+        .controls {
+            margin: 20px 0;
+        }
+        .button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 0 10px;
+            cursor: pointer;
+            background-color: #787A91;
+            color: #0F044C;
+            border: none;
+            border-radius: 5px;
+        }
+        .button:hover {
+            background-color: #EEEEEE;
+        }
         #predictionBox {
             width: 300px;
             height: 50px;
@@ -26,8 +49,14 @@
         <h1>Sign Language Detection</h1>
         <img id="videoFeed" src="{{ url_for('video_feed') }}" width="640" height="480">
         <br>
-        <input type="text" id="predictionBox" readonly placeholder="Prediction will appear here">
+        <input type="text" id="predictionBox" readonly placeholder="Current prediction">
         <br>
+        <textarea id="textBox" readonly placeholder="Accumulated text will appear here"></textarea>
+        <div class="controls">
+            <button class="button" onclick="addText()">ADD</button>
+            <button class="button" onclick="removeText()">REMOVE</button>
+            <button class="button" onclick="playText()">PLAY</button>
+        </div>
         <audio id="audio" style="display: none;"></audio>
     </div>
 
@@ -42,19 +71,46 @@
                     if (data.prediction && data.prediction !== lastPrediction) {
                         document.getElementById('predictionBox').value = data.prediction;
                         lastPrediction = data.prediction;
-                        
-                        // Play audio for new prediction
-                        fetch('/text_to_speech')
-                            .then(response => response.blob())
-                            .then(blob => {
-                                const audioUrl = URL.createObjectURL(blob);
-                                audio.src = audioUrl;
-                                audio.play();
-                            })
-                            .catch(error => console.error('Error playing audio:', error));
                     }
+                    document.getElementById('textBox').value = data.text_content;
                 })
                 .catch(error => console.error('Error:', error));
+        }
+
+        function addText() {
+            fetch('/add_text', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('textBox').value = data.text_content;
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function removeText() {
+            fetch('/remove_text', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('textBox').value = data.text_content;
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function playText() {
+            const text = document.getElementById('textBox').value;
+            if (text) {
+                fetch(`/text_to_speech?text=${encodeURIComponent(text)}`)
+                    .then(response => response.blob())
+                    .then(blob => {
+                        const audioUrl = URL.createObjectURL(blob);
+                        audio.src = audioUrl;
+                        audio.play();
+                    })
+                    .catch(error => console.error('Error playing audio:', error));
+            }
         }
 
         // Update prediction every second

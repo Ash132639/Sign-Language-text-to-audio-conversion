@@ -1,4 +1,4 @@
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, Response, jsonify, send_file
 import cv2
 import mediapipe as mp
 import torch
@@ -7,8 +7,9 @@ import numpy as np
 from gtts import gTTS
 import os
 import time
-app = Flask(__name__)
+from flask import request
 
+app = Flask(__name__)
 # Initialize MediaPipe
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(static_image_mode=False,
@@ -75,7 +76,8 @@ classes = sorted(os.listdir('dataset/train'))
 # Global variable to store the latest prediction
 current_prediction = ""
 last_prediction_time = 0
-prediction_cooldown = 2  # seconds
+prediction_cooldown = 2
+text_content = ""  # Store the accumulated text
 
 def process_frame(frame):
     global current_prediction, last_prediction_time
@@ -132,11 +134,31 @@ def video_feed():
 
 @app.route('/get_prediction')
 def get_prediction():
-    return jsonify({'prediction': current_prediction})
+    return jsonify({
+        'prediction': current_prediction,
+        'text_content': text_content
+    })
+
+@app.route('/add_text', methods=['POST'])
+def add_text():
+    global text_content
+    if current_prediction:
+        if current_prediction.lower() == 'space':
+            text_content += ' '
+        else:
+            text_content += current_prediction
+    return jsonify({'text_content': text_content})
+
+@app.route('/remove_text', methods=['POST'])
+def remove_text():
+    global text_content
+    if text_content:
+        text_content = text_content[:-1]
+    return jsonify({'text_content': text_content})
 
 @app.route('/text_to_speech')
 def text_to_speech():
-    text = current_prediction
+    text = request.args.get('text', '')
     if text:
         tts = gTTS(text=text, lang='en')
         audio_path = "static/speech.mp3"
@@ -145,6 +167,5 @@ def text_to_speech():
     return '', 404
 
 if __name__ == '__main__':
-    # Create static directory if it doesn't exist
     os.makedirs('static', exist_ok=True)
     app.run(debug=True)
