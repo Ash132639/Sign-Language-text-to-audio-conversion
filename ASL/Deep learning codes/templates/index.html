@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sign Language Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Sign Language Detection</h1>
+        
+        <div class="video-container">
+            <img src="{{ url_for('video_feed') }}" id="video-feed">
+        </div>
+
+        <div class="text-container">
+            <textarea id="detected-text" rows="4" readonly></textarea>
+            <div class="button-container">
+                <button onclick="addToText()">Add to Text</button>
+                <button onclick="clearText()">Clear Text</button>
+                <button onclick="speakText()">Speak Text</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

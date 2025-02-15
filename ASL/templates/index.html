@@ -1,30 +1,64 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>ASL Recognition</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Sign Language Detection</title>
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        #videoFeed {
+            margin-bottom: 20px;
+        }
+        #predictionBox {
+            width: 300px;
+            height: 50px;
+            font-size: 24px;
+            margin: 20px auto;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
-    <nav>
-        <a href="/">Home</a>
-        <a href="/about">About Project</a>
-        <a href="/team">Team</a>
-    </nav>
-    
     <div class="container">
-        <h1>ASL Recognition</h1>
-        <div class="video-container">
-            <img src="{{ url_for('video_feed') }}" id="video">
-        </div>
-        <div class="text-container">
-            <textarea id="recognized-text" rows="4"></textarea>
-            <div class="buttons">
-                <button onclick="addCharacter()">Add</button>
-                <button onclick="removeCharacter()">Remove</button>
-            </div>
-        </div>
+        <h1>Sign Language Detection</h1>
+        <img id="videoFeed" src="{{ url_for('video_feed') }}" width="640" height="480">
+        <br>
+        <input type="text" id="predictionBox" readonly placeholder="Prediction will appear here">
+        <br>
+        <audio id="audio" style="display: none;"></audio>
     </div>
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+        let lastPrediction = '';
+        let audio = document.getElementById('audio');
+        
+        function updatePrediction() {
+            fetch('/get_prediction')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.prediction && data.prediction !== lastPrediction) {
+                        document.getElementById('predictionBox').value = data.prediction;
+                        lastPrediction = data.prediction;
+                        
+                        // Play audio for new prediction
+                        fetch('/text_to_speech')
+                            .then(response => response.blob())
+                            .then(blob => {
+                                const audioUrl = URL.createObjectURL(blob);
+                                audio.src = audioUrl;
+                                audio.play();
+                            })
+                            .catch(error => console.error('Error playing audio:', error));
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        // Update prediction every second
+        setInterval(updatePrediction, 1000);
+    </script>
 </body>
 </html>
